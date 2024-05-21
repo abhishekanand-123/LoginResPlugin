@@ -320,6 +320,8 @@ function custom_registration_form_shortcode()
         </div>
     </div>
     <script>
+
+        
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('registration-form');
 
