@@ -280,6 +280,7 @@ function custom_registration_form_shortcode()
         $password = sanitize_text_field($_POST['password']);
         if (strlen($password) < 6) {
             $errors[] = 'Password must be at least 6 characters long.';
+            
         }
 
         if (empty($errors)) {
