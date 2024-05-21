@@ -1,0 +1,89 @@
+.registration-form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+.registration-form h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 37px;
+}
+.registration-form p {
+    margin-bottom: 15px;
+}
+.registration-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.registration-form input[type="text"],
+.registration-form input[type="email"],
+.registration-form input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.registration-form input[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #0073aa;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+.registration-form input[type="submit"]:hover {
+    background-color: #005a87;
+}
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.login-form-wrapper {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+.login-form-wrapper h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.login-form-wrapper form p {
+    margin-bottom: 15px;
+}
+.login-form-wrapper label {
+    display: block;
+    margin-bottom: 5px;
+}
+.login-form-wrapper input[type="email"],
+.login-form-wrapper input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+.login-form-wrapper .login-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.login-form-wrapper .login-button:hover {
+    background-color: #005d8c;
+}
+
