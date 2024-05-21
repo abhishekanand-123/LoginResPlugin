@@ -254,13 +254,9 @@ function custom_registration_form_shortcode()
         $errors = array();
 
         // Sanitize and validate input fields
-        // $first_name = sanitize_text_field($_POST['first_name']);
-        // if (strlen($first_name) < 4 || !ctype_alpha($first_name)) {
-        //     $errors[] = 'First name must be at least 4 alphabetic characters.';
-        // }
         $first_name = sanitize_text_field($_POST['first_name']);
         if (!preg_match('/^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/', $first_name)) {
-            $errors[] = 'First name must be at least 4 alphabetic characters, and spaces are allowed only after the initial 4 characters.';
+            $errors[] = 'First name must be at least 4 characters long and may contain spaces.';
         }
         $last_name = sanitize_text_field($_POST['last_name']);
         if (strlen($last_name) < 4 || !ctype_alpha($last_name)) {
@@ -280,7 +276,6 @@ function custom_registration_form_shortcode()
         $password = sanitize_text_field($_POST['password']);
         if (strlen($password) < 6) {
             $errors[] = 'Password must be at least 6 characters long.';
-            
         }
 
         if (empty($errors)) {
@@ -308,27 +303,78 @@ function custom_registration_form_shortcode()
         }
     }
     if ($registration_successful) : ?>
-        <p class="success-message" style="margin-bottom: 34px;  text-align: center;font-size: 26px;color: green;">Registration successfully!</p>
+        <p class="success-message" style="margin-bottom: 34px;  text-align: center;font-size: 26px;color: green;">Registration successful!</p>
     <?php endif; ?>
     <div class="registration-form-container">
 
         <div class="registration-form">
             <h1>Registration Page</h1>
-            <form method="POST">
-                <p><label for="first_name">First Name: </label><input type="text" name="first_name" required></p>
-                <p><label for="last_name">Last Name: </label><input type="text" name="last_name" required></p>
-                <p><label for="mobile_no">Mobile No: </label><input type="text" name="mobile_no" required></p>
-                <p><label for="email">Email: </label><input type="email" name="email" required></p>
-                <p><label for="password">Password: </label><input type="password" name="password" required></p>
+            <form id="registration-form" method="POST">
+                <p><label for="first_name">First Name: </label><input type="text" name="first_name" id="first_name" required><span class="error-message" id="first_name_error"></span></p>
+                <p><label for="last_name">Last Name: </label><input type="text" name="last_name" id="last_name" required><span class="error-message" id="last_name_error"></span></p>
+                <p><label for="mobile_no">Mobile No: </label><input type="text" name="mobile_no" id="mobile_no" required><span class="error-message" id="mobile_no_error"></span></p>
+                <p><label for="email">Email: </label><input type="email" name="email" id="email" required><span class="error-message" id="email_error"></span></p>
+                <p><label for="password">Password: </label><input type="password" name="password" id="password" required><span class="error-message" id="password_error"></span></p>
                 <p><input type="submit" name="register" value="Register"></p>
             </form>
         </div>
     </div>
-<?php
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('registration-form');
+
+            function validateInput(input, regex, errorMessage, errorSpanId) {
+                const errorSpan = document.getElementById(errorSpanId);
+                if (!regex.test(input.value)) {
+                    errorSpan.textContent = errorMessage;
+                    return false;
+                } else {
+                    errorSpan.textContent = '';
+                    return true;
+                }
+            }
+
+            form.first_name.addEventListener('input', function () {
+                validateInput(this, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
+            });
+
+            form.last_name.addEventListener('input', function () {
+                validateInput(this, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
+            });
+
+            form.mobile_no.addEventListener('input', function () {
+                validateInput(this, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
+            });
+
+            form.email.addEventListener('input', function () {
+                validateInput(this, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
+            });
+
+            form.password.addEventListener('input', function () {
+                validateInput(this, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
+            });
+
+            form.addEventListener('submit', function (event) {
+                const isFirstNameValid = validateInput(form.first_name, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
+                const isLastNameValid = validateInput(form.last_name, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
+                const isMobileNoValid = validateInput(form.mobile_no, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
+                const isEmailValid = validateInput(form.email, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
+                const isPasswordValid = validateInput(form.password, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
+
+                if (!isFirstNameValid || !isLastNameValid || !isMobileNoValid || !isEmailValid || !isPasswordValid) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+    
+    <?php
 
     return ob_get_clean();
 }
 add_shortcode('custom_registration_form', 'custom_registration_form_shortcode');
+
+
 
 
 
