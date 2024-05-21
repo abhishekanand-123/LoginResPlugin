@@ -83,6 +83,7 @@ function run_login_registration()
 }
 run_login_registration(); ?>
 
+
 <?php // In your main plugin file or any other appropriate file
 
 function enqueue_custom_plugin_style()
@@ -373,9 +374,6 @@ function custom_registration_form_shortcode()
     return ob_get_clean();
 }
 add_shortcode('custom_registration_form', 'custom_registration_form_shortcode');
-
-
-
 
 
 function custom_login_form_shortcode()
