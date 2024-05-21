@@ -143,7 +143,7 @@ function my_custom_menu_setup()
 function my_custom_menu_page()
 {
     // Display the header and introduction
-   
+
 
     // Check if the form is submitted to update user data
     if (isset($_POST['action']) && $_POST['action'] === 'update') {
@@ -320,9 +320,7 @@ function custom_registration_form_shortcode()
         </div>
     </div>
     <script>
-
-        
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('registration-form');
 
             function validateInput(input, regex, errorMessage, errorSpanId) {
@@ -336,27 +334,27 @@ function custom_registration_form_shortcode()
                 }
             }
 
-            form.first_name.addEventListener('input', function () {
+            form.first_name.addEventListener('input', function() {
                 validateInput(this, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
             });
 
-            form.last_name.addEventListener('input', function () {
+            form.last_name.addEventListener('input', function() {
                 validateInput(this, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
             });
 
-            form.mobile_no.addEventListener('input', function () {
+            form.mobile_no.addEventListener('input', function() {
                 validateInput(this, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
             });
 
-            form.email.addEventListener('input', function () {
+            form.email.addEventListener('input', function() {
                 validateInput(this, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
             });
 
-            form.password.addEventListener('input', function () {
+            form.password.addEventListener('input', function() {
                 validateInput(this, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
             });
 
-            form.addEventListener('submit', function (event) {
+            form.addEventListener('submit', function(event) {
                 const isFirstNameValid = validateInput(form.first_name, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
                 const isLastNameValid = validateInput(form.last_name, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
                 const isMobileNoValid = validateInput(form.mobile_no, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
@@ -369,8 +367,8 @@ function custom_registration_form_shortcode()
             });
         });
     </script>
-    
-    <?php
+
+<?php
 
     return ob_get_clean();
 }
@@ -380,7 +378,8 @@ add_shortcode('custom_registration_form', 'custom_registration_form_shortcode');
 
 
 
-function custom_login_form_shortcode() {
+function custom_login_form_shortcode()
+{
     ob_start();
 
     $login_success = false;
@@ -398,22 +397,22 @@ function custom_login_form_shortcode() {
         }
     }
 
-    ?>
+?>
     <?php
-     if ($login_success): ?>
+    if ($login_success) : ?>
         <p style="color: green; text-align: center; margin-bottom: 20px; font-size: 26px;">Login successfully!</p>
-    <?php endif; 
+    <?php endif;
     ?>
     <div class="login-form-wrapper">
         <h2 style="text-align:center;">Login Page</h2>
-        
+
         <form method="POST">
             <p><label for="email">Email: </label><input type="email" name="email" required></p>
             <p><label for="password">Password: </label><input type="password" name="password" required></p>
             <p><input type="submit" name="login" value="Login" class="login-button"></p>
         </form>
     </div>
-    <?php
+<?php
 
     return ob_get_clean();
 }
