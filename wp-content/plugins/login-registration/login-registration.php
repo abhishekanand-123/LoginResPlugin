@@ -246,19 +246,21 @@ function display_all_users()
 }
 function custom_registration_form_shortcode()
 {
+
+
     ob_start();
 
     // Check if registration is successful
     $registration_successful = false;
+    $errors = array();
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
-        $errors = array();
-
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register']) && check_admin_referer('custom_registration_form', 'custom_registration_nonce')) {
         // Sanitize and validate input fields
         $first_name = sanitize_text_field($_POST['first_name']);
-        if (!preg_match('/^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/', $first_name)) {
+        if (!preg_match('/^[a-zA-Z]{3,}(?:[a-zA-Z ]*)$/', $first_name)) {
             $errors[] = 'First name must be at least 4 characters long and may contain spaces.';
         }
+
         $last_name = sanitize_text_field($_POST['last_name']);
         if (strlen($last_name) < 4 || !ctype_alpha($last_name)) {
             $errors[] = 'Last name must be at least 4 alphabetic characters.';
@@ -280,96 +282,119 @@ function custom_registration_form_shortcode()
         }
 
         if (empty($errors)) {
-            // Create new user
-            $user_id = wp_insert_user(
-                array(
-                    'user_login' => $email, // Assuming email is used as username
+            // Check if the user is already logged in
+            if (is_user_logged_in()) {
+                // Redirect logged-in users to the specific URL
+                // wp_redirect('http://localhost/registration-login/index.php/home-page/');
+                // exit;
+            }
+
+            // Check if the email already exists
+            if (email_exists($email)) {
+                $errors[] = 'A user with this email address already exists.'; ?>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const form = document.getElementById('registration-forms');
+                        form.style.display = 'none';
+                    });
+                </script>
+        <?php
+            } else {
+                // Create new user
+                $user_id = wp_insert_user(array(
+                    'user_login' => $email,
                     'user_email' => $email,
                     'user_pass' => $password,
                     'first_name' => $first_name,
                     'last_name' => $last_name,
-                    'role' => 'subscriber' // Set the user role as needed
-                )
-            );
+                    'role' => 'subscriber'
+                ));
 
-            if (!is_wp_error($user_id)) {
-                $registration_successful = true;
-            } else {
-                echo '<p class="error-message">' . $user_id->get_error_message() . '</p>';
-            }
-        } else {
-            foreach ($errors as $error) {
-                echo '<p class="error-message">' . $error . '</p>';
+                if (!is_wp_error($user_id)) {
+                    $registration_successful = true;
+                } else {
+                    $errors[] = $user_id->get_error_message();
+                }
             }
         }
     }
-    if ($registration_successful) : ?>
-        <p class="success-message" style="margin-bottom: 34px;  text-align: center;font-size: 26px;color: green;">Registration successful!</p>
-    <?php endif; ?>
-    <div class="registration-form-container">
 
-        <div class="registration-form">
-            <h1>Registration Page</h1>
-            <form id="registration-form" method="POST">
-                <p><label for="first_name">First Name: </label><input type="text" name="first_name" id="first_name" required><span class="error-message" id="first_name_error"></span></p>
-                <p><label for="last_name">Last Name: </label><input type="text" name="last_name" id="last_name" required><span class="error-message" id="last_name_error"></span></p>
-                <p><label for="mobile_no">Mobile No: </label><input type="text" name="mobile_no" id="mobile_no" required><span class="error-message" id="mobile_no_error"></span></p>
-                <p><label for="email">Email: </label><input type="email" name="email" id="email" required><span class="error-message" id="email_error"></span></p>
-                <p><label for="password">Password: </label><input type="password" name="password" id="password" required><span class="error-message" id="password_error"></span></p>
-                <p><input type="submit" name="register" value="Register"></p>
-            </form>
-        </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('registration-form');
+    if ($registration_successful) {
+        echo '<p class="success-message" style="margin-bottom: 34px; text-align: center; font-size: 26px; color: green;">Registration successful!</p>';
+    }
 
-            function validateInput(input, regex, errorMessage, errorSpanId) {
-                const errorSpan = document.getElementById(errorSpanId);
-                if (!regex.test(input.value)) {
-                    errorSpan.textContent = errorMessage;
-                    return false;
-                } else {
-                    errorSpan.textContent = '';
-                    return true;
-                }
+    if (!$registration_successful) {
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo '<p class="error-message">' . esc_html($error) . '</p>';
             }
+        }
+        ?>
+        <div class="registration-form-container" id="registration-forms">
+            <div class="registration-form" >
+                <h1>Registration Page</h1>
+                <form id="registration-form" method="POST">
+                    <?php wp_nonce_field('custom_registration_form', 'custom_registration_nonce'); ?>
+                    <p><label for="first_name">First Name: </label><input type="text" name="first_name" id="first_name" required><span class="error-message" id="first_name_error"></span></p>
+                    <p><label for="last_name">Last Name: </label><input type="text" name="last_name" id="last_name" required><span class="error-message" id="last_name_error"></span></p>
+                    <p><label for="mobile_no">Mobile No: </label><input type="text" name="mobile_no" id="mobile_no" required><span class="error-message" id="mobile_no_error"></span></p>
+                    <p><label for="email">Email: </label><input type="email" name="email" id="email" required><span class="error-message" id="email_error"></span></p>
+                    <p><label for="password">Password: </label><input type="password" name="password" id="password" required><span class="error-message" id="password_error"></span></p>
+                    <p><input type="submit" name="register" value="Register"></p>
+                </form>
+            </div>
+        </div>
 
-            form.first_name.addEventListener('input', function() {
-                validateInput(this, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
-            });
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('registration-form');
 
-            form.last_name.addEventListener('input', function() {
-                validateInput(this, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
-            });
-
-            form.mobile_no.addEventListener('input', function() {
-                validateInput(this, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
-            });
-
-            form.email.addEventListener('input', function() {
-                validateInput(this, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
-            });
-
-            form.password.addEventListener('input', function() {
-                validateInput(this, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
-            });
-
-            form.addEventListener('submit', function(event) {
-                const isFirstNameValid = validateInput(form.first_name, /^[a-zA-Z]{4,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
-                const isLastNameValid = validateInput(form.last_name, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
-                const isMobileNoValid = validateInput(form.mobile_no, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
-                const isEmailValid = validateInput(form.email, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
-                const isPasswordValid = validateInput(form.password, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
-
-                if (!isFirstNameValid || !isLastNameValid || !isMobileNoValid || !isEmailValid || !isPasswordValid) {
-                    event.preventDefault();
+                function validateInput(input, regex, errorMessage, errorSpanId) {
+                    const errorSpan = document.getElementById(errorSpanId);
+                    if (!regex.test(input.value)) {
+                        errorSpan.textContent = errorMessage;
+                        return false;
+                    } else {
+                        errorSpan.textContent = '';
+                        return true;
+                    }
                 }
-            });
-        });
-    </script>
 
-<?php
+                form.first_name.addEventListener('input', function() {
+                    validateInput(this, /^[a-zA-Z]{3,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
+                });
+
+                form.last_name.addEventListener('input', function() {
+                    validateInput(this, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
+                });
+
+                form.mobile_no.addEventListener('input', function() {
+                    validateInput(this, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
+                });
+
+                form.email.addEventListener('input', function() {
+                    validateInput(this, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
+                });
+
+                form.password.addEventListener('input', function() {
+                    validateInput(this, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
+                });
+
+                form.addEventListener('submit', function(event) {
+                    const isFirstNameValid = validateInput(form.first_name, /^[a-zA-Z]{3,}(?:[a-zA-Z ]*)$/, 'First name must be at least 4 characters long and may contain spaces.', 'first_name_error');
+                    const isLastNameValid = validateInput(form.last_name, /^[a-zA-Z]{4,}$/, 'Last name must be at least 4 alphabetic characters.', 'last_name_error');
+                    const isMobileNoValid = validateInput(form.mobile_no, /^\d{10}$/, 'Mobile number must be 10 digits.', 'mobile_no_error');
+                    const isEmailValid = validateInput(form.email, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address.', 'email_error');
+                    const isPasswordValid = validateInput(form.password, /.{6,}/, 'Password must be at least 6 characters long.', 'password_error');
+
+                    if (!isFirstNameValid || !isLastNameValid || !isMobileNoValid || !isEmailValid || !isPasswordValid) {
+                        event.preventDefault();
+                    }
+                });
+            });
+        </script>
+    <?php
+    }
 
     return ob_get_clean();
 }
@@ -390,13 +415,15 @@ function custom_login_form_shortcode()
 
         if ($user && wp_check_password($password, $user->data->user_pass)) {
             $login_success = true;
+            wp_set_current_user($user->ID);
+            // wp_set_auth_cookie($user->ID); // Uncommented this line
+            wp_redirect('http://localhost/registration-login/index.php/home-page/'); // Redirect to home page
+            exit;
         } else {
             echo '<p style="color: red; margin-bottom: 20px; text-align: center;">Email or password is incorrect.</p>';
         }
     }
 
-?>
-    <?php
     if ($login_success) : ?>
         <p style="color: green; text-align: center; margin-bottom: 20px; font-size: 26px;">Login successfully!</p>
     <?php endif;
@@ -409,9 +436,32 @@ function custom_login_form_shortcode()
             <p><label for="password">Password: </label><input type="password" name="password" required></p>
             <p><input type="submit" name="login" value="Login" class="login-button"></p>
         </form>
+        <p style="text-align: center; margin-top: 20px;">
+            Don't have an account? <a href="http://localhost/registration-login/index.php/registration-page/">Register</a>
+        </p>
     </div>
 <?php
 
     return ob_get_clean();
 }
 add_shortcode('custom_login_form', 'custom_login_form_shortcode');
+
+
+// Create a shortcode for signout
+function custom_signout_shortcode()
+{
+    if (isset($_GET['signout']) && $_GET['signout'] == 'true') {
+        // wp_logout(); // Log the user out
+        wp_redirect('http://localhost/registration-login/index.php/login-page/'); // Redirect to the login page
+        exit; // Ensure the script stops executing after the redirect
+    }
+
+    ob_start();
+?>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="?signout=true">Signout</a>
+    </div>
+<?php
+    return ob_get_clean();
+}
+add_shortcode('custom_signout', 'custom_signout_shortcode');
